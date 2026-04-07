@@ -1,16 +1,18 @@
 """
-Helper script to guide you through creating 8 Telegram bots.
+Helper script to guide you through creating 10 Telegram bots.
 
 Run this interactively: python scripts/setup_telegram_bots.py
 """
 
 ROLES = [
+    ("HUMAN_PROXY", "Human Proxy (老闆代理人)", "human_proxy_bot"),
     ("SCRUM_MASTER", "Scrum Master", "scrum_master_bot"),
     ("PRODUCT_OWNER", "Product Owner", "product_owner_bot"),
     ("TECH_LEAD", "Tech Lead", "tech_lead_bot"),
     ("BACKEND", "Backend Developer", "backend_dev_bot"),
     ("FRONTEND", "Frontend Developer", "frontend_dev_bot"),
     ("APP", "App Developer", "app_dev_bot"),
+    ("UIUX", "UI/UX Designer", "uiux_designer_bot"),
     ("QA", "QA Engineer", "qa_engineer_bot"),
     ("DEVOPS", "DevOps Engineer", "devops_eng_bot"),
 ]
@@ -21,7 +23,7 @@ def main():
     print("🤖 Telegram Bot Setup Guide for Agent Scrum Team")
     print("=" * 60)
     print()
-    print("你需要在 Telegram 中建立 8 個 Bot。")
+    print("你需要在 Telegram 中建立 10 個 Bot。")
     print("步驟：")
     print("1. 在 Telegram 搜尋 @BotFather")
     print("2. 對 BotFather 發送 /newbot")

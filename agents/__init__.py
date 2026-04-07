@@ -6,6 +6,8 @@ from agents.frontend import FrontendAgent
 from agents.app import AppAgent
 from agents.qa import QAAgent
 from agents.devops import DevOpsAgent
+from agents.uiux import UIUXAgent
+from agents.human_proxy import HumanProxyAgent
 
 ALL_AGENTS = {
     "scrum_master": ScrumMasterAgent,
@@ -16,6 +18,8 @@ ALL_AGENTS = {
     "app": AppAgent,
     "qa": QAAgent,
     "devops": DevOpsAgent,
+    "uiux": UIUXAgent,
+    "human_proxy": HumanProxyAgent,
 }
 
 __all__ = [
@@ -27,5 +31,7 @@ __all__ = [
     "AppAgent",
     "QAAgent",
     "DevOpsAgent",
+    "UIUXAgent",
+    "HumanProxyAgent",
     "ALL_AGENTS",
 ]

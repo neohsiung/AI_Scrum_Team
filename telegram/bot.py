@@ -53,6 +53,8 @@ class AgentTelegramBot:
         self.app.add_handler(CommandHandler("task", self._cmd_task))
         self.app.add_handler(CommandHandler("consensus", self._cmd_consensus))
         self.app.add_handler(CommandHandler("ask", self._cmd_ask_agent))
+        self.app.add_handler(CommandHandler("relay", self._cmd_relay))
+        self.app.add_handler(CommandHandler("broadcast", self._cmd_broadcast))
         self.app.add_handler(CommandHandler("help", self._cmd_help))
         self.app.add_handler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, self._handle_message)
@@ -242,6 +244,93 @@ class AgentTelegramBot:
             f"✅ 已透過 A2A 向 {target_role} 發送訊息。"
         )
 
+    async def _cmd_relay(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Human Proxy exclusive: relay a message to an agent with intent analysis."""
+        if self.agent.ROLE != "human_proxy":
+            await update.message.reply_text("此指令僅限 Human Proxy 使用。")
+            return
+
+        if not context.args or len(context.args) < 2:
+            await update.message.reply_text(
+                "用法: /relay <角色> <訊息>\n"
+                "例如: /relay tech_lead 我們需要重構認證模組\n\n"
+                "我會幫你分析意圖、智慧轉達、並回報結果。"
+            )
+            return
+
+        target_role = context.args[0]
+        raw_message = " ".join(context.args[1:])
+
+        if target_role not in self._agents_registry:
+            await update.message.reply_text(
+                f"找不到角色: {target_role}\n"
+                f"可用角色: {', '.join(self._agents_registry.keys())}"
+            )
+            return
+
+        await update.message.reply_text(f"🔄 正在分析您的意圖並轉達給 {target_role}...")
+
+        # Step 1: Use Human Proxy's Claude to analyze intent and craft the relay message
+        analysis_prompt = (
+            f"老闆要我把以下訊息傳給 {target_role}：\n\n"
+            f"「{raw_message}」\n\n"
+            f"請你：\n"
+            f"1. 分析老闆為什麼要問這個（深層動機）\n"
+            f"2. 將訊息轉化為更具體、對 {target_role} 更有幫助的版本\n"
+            f"3. 說明你為什麼這樣轉達\n\n"
+            f"格式：\n"
+            f"📋 **轉達內容**：[你轉化後要傳給 {target_role} 的訊息]\n\n"
+            f"🧠 **意圖分析**：\n"
+            f"- 老闆為什麼這樣問：[分析]\n"
+            f"- 我為什麼這樣轉達：[理由]\n\n"
+            f"💡 **建議**：[如果有的話]"
+        )
+
+        proxy_analysis = await self.agent.chat(analysis_prompt)
+
+        # Send analysis back to owner first
+        for i in range(0, len(proxy_analysis), 4000):
+            await update.message.reply_text(proxy_analysis[i : i + 4000])
+
+        # Step 2: Actually relay to the target agent via A2A
+        await self.agent.send_a2a(
+            target_role,
+            f"[來自老闆，由 Human Proxy 轉達]\n{raw_message}",
+            msg_type="request",
+        )
+        await update.message.reply_text(f"✅ 已轉達給 {target_role}。")
+
+    async def _cmd_broadcast(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Human Proxy exclusive: broadcast a message to all or selected agents."""
+        if self.agent.ROLE != "human_proxy":
+            await update.message.reply_text("此指令僅限 Human Proxy 使用。")
+            return
+
+        if not context.args:
+            await update.message.reply_text(
+                "用法: /broadcast <訊息>\n"
+                "向所有團隊成員廣播訊息。"
+            )
+            return
+
+        message = " ".join(context.args)
+        targets = [r for r in self._agents_registry if r != "human_proxy"]
+
+        await update.message.reply_text(
+            f"📢 正在向 {len(targets)} 位團隊成員廣播..."
+        )
+
+        for role in targets:
+            await self.agent.send_a2a(
+                role,
+                f"[老闆廣播，由 Human Proxy 轉達]\n{message}",
+                msg_type="request",
+            )
+
+        await update.message.reply_text(
+            f"✅ 已廣播給：{', '.join(targets)}"
+        )
+
     # ---- Message Handler ----
 
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -271,5 +360,7 @@ def get_token_for_role(role: str) -> str:
         "app": settings.telegram_token_app,
         "qa": settings.telegram_token_qa,
         "devops": settings.telegram_token_devops,
+        "uiux": settings.telegram_token_uiux,
+        "human_proxy": settings.telegram_token_human_proxy,
     }
     return token_map.get(role, "")

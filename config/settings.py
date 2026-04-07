@@ -27,6 +27,8 @@ class AgentConfig(BaseSettings):
     telegram_token_app: str = Field(default="", alias="TG_TOKEN_APP")
     telegram_token_qa: str = Field(default="", alias="TG_TOKEN_QA")
     telegram_token_devops: str = Field(default="", alias="TG_TOKEN_DEVOPS")
+    telegram_token_uiux: str = Field(default="", alias="TG_TOKEN_UIUX")
+    telegram_token_human_proxy: str = Field(default="", alias="TG_TOKEN_HUMAN_PROXY")
 
     # Telegram owner chat ID (your personal chat ID for escalation)
     telegram_owner_chat_id: str = Field(default="", alias="TG_OWNER_CHAT_ID")
