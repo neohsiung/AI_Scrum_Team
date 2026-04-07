@@ -1,0 +1,22 @@
+[project]
+name = "agent-scrum-team"
+version = "0.1.0"
+description = "AI Agent Scrum Team - 8 autonomous agents with independent memory, skills, and Telegram channels"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.39.0",
+    "python-telegram-bot>=21.0",
+    "redis>=5.0.0",
+    "aiosqlite>=0.20.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "structlog>=24.0.0",
+    "asyncio>=3.4.3",
+]
+
+[project.scripts]
+scrum-team = "main:main"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
